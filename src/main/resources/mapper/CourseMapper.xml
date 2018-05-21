@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vito.ssm.dao.CourseMapper">
+  <resultMap id="BaseResultMap" type="com.vito.ssm.bean.Course">
+    <id column="cou_id" jdbcType="INTEGER" property="couId" />
+    <result column="cou_name" jdbcType="VARCHAR" property="couName" />
+    <result column="cou_hour" jdbcType="INTEGER" property="couHour" />
+    <result column="cou_credit" jdbcType="INTEGER" property="couCredit" />
+    <result column="cou_dept" jdbcType="INTEGER" property="couDept" />
+    <result column="cou_teacher" jdbcType="INTEGER" property="couTeacher" />
+    <result column="cou_time" jdbcType="VARCHAR" property="couTime" />
+    <result column="cou_room" jdbcType="VARCHAR" property="couRoom" />
+  </resultMap>
+  
+  <resultMap id="WithFKResultMap" type="com.vito.ssm.bean.Course">
+    <id column="cou_id" jdbcType="INTEGER" property="couId" />
+    <result column="cou_name" jdbcType="VARCHAR" property="couName" />
+    <result column="cou_hour" jdbcType="INTEGER" property="couHour" />
+    <result column="cou_credit" jdbcType="INTEGER" property="couCredit" />
+    <result column="cou_dept" jdbcType="INTEGER" property="couDept" />
+    <result column="cou_teacher" jdbcType="INTEGER" property="couTeacher" />
+    <result column="cou_time" jdbcType="VARCHAR" property="couTime" />
+    <result column="cou_room" jdbcType="VARCHAR" property="couRoom" />
+    <association property="teacher" javaType="com.vito.ssm.bean.Teacher">
+      <id column="tea_id" property="teaId" />
+      <result column="tea_name" property="teaName"/>
+    </association>
+    <association property="department" javaType="com.vito.ssm.bean.Department">
+      <id column="dept_id" property="deptId" />
+      <result column="dept_name" property="deptName"/>
+    </association>
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    cou_id, cou_name, cou_hour, cou_credit, cou_dept, cou_teacher, cou_time, cou_room
+  </sql>
+  
+  <sql id="WithFK_Column_list">
+    cou_id, cou_name, cou_hour, cou_credit, cou_dept, cou_teacher, cou_time, cou_room, dept_name, tea_name
+  </sql>
+  <!-- List<Course> selectByExampleWithFK(CourseExample example);
+    带老师和院系的名字的课程查询
+   -->  
+   <select id="selectByExampleWithFK" parameterType="com.vito.ssm.bean.CourseExample" resultMap="WithFKResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="WithFK_Column_list" />
+    FROM tbl_course 
+	INNER JOIN tbl_department ON cou_dept = dept_id
+	INNER JOIN tbl_teacher ON cou_teacher = tea_id
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+   
+   <!-- List<Course> selectByTeaId(Integer couTeacher); -->
+   <select id="selectByTeaId" resultType="com.vito.ssm.bean.Course">
+     SELECT cou_name ,cou_time ,cou_room 
+	FROM tbl_course
+	WHERE cou_teacher = #{couTeacher}
+   </select>
+      
+  <select id="selectByExample" parameterType="com.vito.ssm.bean.CourseExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from tbl_course
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  
+  <!-- Course selectByPrimaryKeyWithFK(Integer couId); -->
+  <select id="selectByPrimaryKeyWithFK" parameterType="java.lang.Integer" resultMap="WithFKResultMap">
+    select 
+    <include refid="WithFK_Column_list" />
+    FROM tbl_course 
+	INNER JOIN tbl_department ON cou_dept = dept_id
+	INNER JOIN tbl_teacher ON cou_teacher = tea_id
+    where cou_id = #{couId,jdbcType=INTEGER}
+  </select>
+  
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_course
+    where cou_id = #{couId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_course
+    where cou_id = #{couId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.vito.ssm.bean.CourseExample">
+    delete from tbl_course
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.vito.ssm.bean.Course">
+    insert into tbl_course (cou_id, cou_name, cou_hour, 
+      cou_credit, cou_dept, cou_teacher, 
+      cou_time, cou_room)
+    values (#{couId,jdbcType=INTEGER}, #{couName,jdbcType=VARCHAR}, #{couHour,jdbcType=INTEGER}, 
+      #{couCredit,jdbcType=INTEGER}, #{couDept,jdbcType=INTEGER}, #{couTeacher,jdbcType=INTEGER}, 
+      #{couTime,jdbcType=VARCHAR}, #{couRoom,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.vito.ssm.bean.Course">
+    insert into tbl_course
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="couId != null">
+        cou_id,
+      </if>
+      <if test="couName != null">
+        cou_name,
+      </if>
+      <if test="couHour != null">
+        cou_hour,
+      </if>
+      <if test="couCredit != null">
+        cou_credit,
+      </if>
+      <if test="couDept != null">
+        cou_dept,
+      </if>
+      <if test="couTeacher != null">
+        cou_teacher,
+      </if>
+      <if test="couTime != null">
+        cou_time,
+      </if>
+      <if test="couRoom != null">
+        cou_room,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="couId != null">
+        #{couId,jdbcType=INTEGER},
+      </if>
+      <if test="couName != null">
+        #{couName,jdbcType=VARCHAR},
+      </if>
+      <if test="couHour != null">
+        #{couHour,jdbcType=INTEGER},
+      </if>
+      <if test="couCredit != null">
+        #{couCredit,jdbcType=INTEGER},
+      </if>
+      <if test="couDept != null">
+        #{couDept,jdbcType=INTEGER},
+      </if>
+      <if test="couTeacher != null">
+        #{couTeacher,jdbcType=INTEGER},
+      </if>
+      <if test="couTime != null">
+        #{couTime,jdbcType=VARCHAR},
+      </if>
+      <if test="couRoom != null">
+        #{couRoom,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.vito.ssm.bean.CourseExample" resultType="java.lang.Long">
+    select count(*) from tbl_course
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update tbl_course
+    <set>
+      <if test="record.couId != null">
+        cou_id = #{record.couId,jdbcType=INTEGER},
+      </if>
+      <if test="record.couName != null">
+        cou_name = #{record.couName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.couHour != null">
+        cou_hour = #{record.couHour,jdbcType=INTEGER},
+      </if>
+      <if test="record.couCredit != null">
+        cou_credit = #{record.couCredit,jdbcType=INTEGER},
+      </if>
+      <if test="record.couDept != null">
+        cou_dept = #{record.couDept,jdbcType=INTEGER},
+      </if>
+      <if test="record.couTeacher != null">
+        cou_teacher = #{record.couTeacher,jdbcType=INTEGER},
+      </if>
+      <if test="record.couTime != null">
+        cou_time = #{record.couTime,jdbcType=VARCHAR},
+      </if>
+      <if test="record.couRoom != null">
+        cou_room = #{record.couRoom,jdbcType=VARCHAR},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update tbl_course
+    set cou_id = #{record.couId,jdbcType=INTEGER},
+      cou_name = #{record.couName,jdbcType=VARCHAR},
+      cou_hour = #{record.couHour,jdbcType=INTEGER},
+      cou_credit = #{record.couCredit,jdbcType=INTEGER},
+      cou_dept = #{record.couDept,jdbcType=INTEGER},
+      cou_teacher = #{record.couTeacher,jdbcType=INTEGER},
+      cou_time = #{record.couTime,jdbcType=VARCHAR},
+      cou_room = #{record.couRoom,jdbcType=VARCHAR}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.vito.ssm.bean.Course">
+    update tbl_course
+    <set>
+      <if test="couName != null">
+        cou_name = #{couName,jdbcType=VARCHAR},
+      </if>
+      <if test="couHour != null">
+        cou_hour = #{couHour,jdbcType=INTEGER},
+      </if>
+      <if test="couCredit != null">
+        cou_credit = #{couCredit,jdbcType=INTEGER},
+      </if>
+      <if test="couDept != null">
+        cou_dept = #{couDept,jdbcType=INTEGER},
+      </if>
+      <if test="couTeacher != null">
+        cou_teacher = #{couTeacher,jdbcType=INTEGER},
+      </if>
+      <if test="couTime != null">
+        cou_time = #{couTime,jdbcType=VARCHAR},
+      </if>
+      <if test="couRoom != null">
+        cou_room = #{couRoom,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where cou_id = #{couId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.vito.ssm.bean.Course">
+    update tbl_course
+    set cou_name = #{couName,jdbcType=VARCHAR},
+      cou_hour = #{couHour,jdbcType=INTEGER},
+      cou_credit = #{couCredit,jdbcType=INTEGER},
+      cou_dept = #{couDept,jdbcType=INTEGER},
+      cou_teacher = #{couTeacher,jdbcType=INTEGER},
+      cou_time = #{couTime,jdbcType=VARCHAR},
+      cou_room = #{couRoom,jdbcType=VARCHAR}
+    where cou_id = #{couId,jdbcType=INTEGER}
+  </update>
+</mapper>

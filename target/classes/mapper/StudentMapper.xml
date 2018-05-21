@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vito.ssm.dao.StudentMapper">
+  <resultMap id="BaseResultMap" type="com.vito.ssm.bean.Student">
+    <id column="stu_id" jdbcType="INTEGER" property="stuId" />
+    <result column="stu_name" jdbcType="VARCHAR" property="stuName" />
+    <result column="stu_age" jdbcType="INTEGER" property="stuAge" />
+    <result column="stu_gender" jdbcType="CHAR" property="stuGender" />
+    <result column="stu_dept" jdbcType="INTEGER" property="stuDept" />
+    <result column="stu_classes" jdbcType="INTEGER" property="stuClasses" />
+  </resultMap>
+  <resultMap type="com.vito.ssm.bean.Student" id="WithFKResultMap">
+    <id column="stu_id" jdbcType="INTEGER" property="stuId" />
+    <result column="stu_name" jdbcType="VARCHAR" property="stuName" />
+    <result column="stu_age" jdbcType="INTEGER" property="stuAge" />
+    <result column="stu_gender" jdbcType="CHAR" property="stuGender" />
+    <result column="stu_dept" jdbcType="INTEGER" property="stuDept" />
+    <result column="stu_classes" jdbcType="INTEGER" property="stuClasses" />
+    <association property="department" javaType="com.vito.ssm.bean.Department">
+      <id column="dept_id" property="deptId"/>
+      <result column="dept_name" property="deptName"/>
+    </association>
+    <association property="classes" javaType="com.vito.ssm.bean.Classes">
+      <id column="class_id" property="classId"/>
+      <result column="class_name" property="className"/>
+    </association>
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    stu_id, stu_name, stu_age, stu_gender, stu_dept, stu_classes
+  </sql>
+  <sql id="WithFK_Column_List">
+    stu_id, stu_name, stu_age, stu_gender, stu_dept, stu_classes,dept_name,dept_id,class_id,class_name
+  </sql>
+  <!-- Student selectByPrimaryKeyWithFK(Integer stuId); -->
+  <select id="selectByPrimaryKeyWithFK" parameterType="com.vito.ssm.bean.StudentExample" resultMap="WithFKResultMap">
+    select 
+    <include refid="WithFK_Column_List" />
+    FROM tbl_student 
+	INNER JOIN tbl_department ON stu_dept = dept_id
+	INNER JOIN tbl_classes ON stu_classes = class_id
+    where stu_id = #{stuId,jdbcType=INTEGER}
+  </select>
+  
+  <!-- List<Student> selectByExampleWithFK(StudentExample example); 带班级和院系的信息-->
+  <select id="selectByExampleWithFK" parameterType="com.vito.ssm.bean.StudentExample" resultMap="WithFKResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="WithFK_Column_List" />
+    FROM tbl_student 
+	INNER JOIN tbl_department ON stu_dept = dept_id
+	INNER JOIN tbl_classes ON stu_classes = class_id
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  
+  <select id="selectByExample" parameterType="com.vito.ssm.bean.StudentExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from tbl_student
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from tbl_student
+    where stu_id = #{stuId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from tbl_student
+    where stu_id = #{stuId,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.vito.ssm.bean.StudentExample">
+    delete from tbl_student
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.vito.ssm.bean.Student">
+    insert into tbl_student (stu_id, stu_name, stu_age, 
+      stu_gender, stu_dept, stu_classes
+      )
+    values (#{stuId,jdbcType=INTEGER}, #{stuName,jdbcType=VARCHAR}, #{stuAge,jdbcType=INTEGER}, 
+      #{stuGender,jdbcType=CHAR}, #{stuDept,jdbcType=INTEGER}, #{stuClasses,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.vito.ssm.bean.Student">
+    insert into tbl_student
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="stuId != null">
+        stu_id,
+      </if>
+      <if test="stuName != null">
+        stu_name,
+      </if>
+      <if test="stuAge != null">
+        stu_age,
+      </if>
+      <if test="stuGender != null">
+        stu_gender,
+      </if>
+      <if test="stuDept != null">
+        stu_dept,
+      </if>
+      <if test="stuClasses != null">
+        stu_classes,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="stuId != null">
+        #{stuId,jdbcType=INTEGER},
+      </if>
+      <if test="stuName != null">
+        #{stuName,jdbcType=VARCHAR},
+      </if>
+      <if test="stuAge != null">
+        #{stuAge,jdbcType=INTEGER},
+      </if>
+      <if test="stuGender != null">
+        #{stuGender,jdbcType=CHAR},
+      </if>
+      <if test="stuDept != null">
+        #{stuDept,jdbcType=INTEGER},
+      </if>
+      <if test="stuClasses != null">
+        #{stuClasses,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.vito.ssm.bean.StudentExample" resultType="java.lang.Long">
+    select count(*) from tbl_student
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update tbl_student
+    <set>
+      <if test="record.stuId != null">
+        stu_id = #{record.stuId,jdbcType=INTEGER},
+      </if>
+      <if test="record.stuName != null">
+        stu_name = #{record.stuName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.stuAge != null">
+        stu_age = #{record.stuAge,jdbcType=INTEGER},
+      </if>
+      <if test="record.stuGender != null">
+        stu_gender = #{record.stuGender,jdbcType=CHAR},
+      </if>
+      <if test="record.stuDept != null">
+        stu_dept = #{record.stuDept,jdbcType=INTEGER},
+      </if>
+      <if test="record.stuClasses != null">
+        stu_classes = #{record.stuClasses,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update tbl_student
+    set stu_id = #{record.stuId,jdbcType=INTEGER},
+      stu_name = #{record.stuName,jdbcType=VARCHAR},
+      stu_age = #{record.stuAge,jdbcType=INTEGER},
+      stu_gender = #{record.stuGender,jdbcType=CHAR},
+      stu_dept = #{record.stuDept,jdbcType=INTEGER},
+      stu_classes = #{record.stuClasses,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.vito.ssm.bean.Student">
+    update tbl_student
+    <set>
+      <if test="stuName != null">
+        stu_name = #{stuName,jdbcType=VARCHAR},
+      </if>
+      <if test="stuAge != null">
+        stu_age = #{stuAge,jdbcType=INTEGER},
+      </if>
+      <if test="stuGender != null">
+        stu_gender = #{stuGender,jdbcType=CHAR},
+      </if>
+      <if test="stuDept != null">
+        stu_dept = #{stuDept,jdbcType=INTEGER},
+      </if>
+      <if test="stuClasses != null">
+        stu_classes = #{stuClasses,jdbcType=INTEGER},
+      </if>
+    </set>
+    where stu_id = #{stuId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.vito.ssm.bean.Student">
+    update tbl_student
+    set stu_name = #{stuName,jdbcType=VARCHAR},
+      stu_age = #{stuAge,jdbcType=INTEGER},
+      stu_gender = #{stuGender,jdbcType=CHAR},
+      stu_dept = #{stuDept,jdbcType=INTEGER},
+      stu_classes = #{stuClasses,jdbcType=INTEGER}
+    where stu_id = #{stuId,jdbcType=INTEGER}
+  </update>
+</mapper>
